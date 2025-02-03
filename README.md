@@ -26,7 +26,7 @@ Instale as dependências necessárias:
 
 Execute o servidor de desenvolvimento React:
 
-`npm run dev --port 5173`
+`npm run dev`
 
 O front-end estará disponível em http://localhost:5173. Caso você tenha que executar em alguma outra porta, é necessário atualizar também no arquivo `backend\main.py`:
 
