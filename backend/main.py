@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 
-# Middleware do FastAPI para controlar as permissões de CORS (Cross-Origin Resource Sharing). Isso permite configurar DE QUAIS domínios ou portas o servidort pode receber requisições
+# Middleware do FastAPI para controlar as permissões de CORS (Cross-Origin Resource Sharing). Isso permite configurar DE QUAIS domínios ou portas o servidor pode receber requisições
 from fastapi.middleware.cors import CORSMiddleware
 
 # Utilizado para manipulação dos diretórios
@@ -11,6 +11,15 @@ import shutil
 
 # Para processar o html
 from bs4 import BeautifulSoup
+
+import time
+import hashlib
+
+def generate_unique_filename(filename):
+    timestamp = str(int(time.time()))  # Gera um timestamp único
+    hash_str = hashlib.md5(filename.encode()).hexdigest()  # Gera um hash do nome do arquivo
+    return f"{timestamp}_{hash_str}_{filename}"
+
 
 
 app = FastAPI()
@@ -43,7 +52,7 @@ async def upload_html(file: UploadFile = File(...)):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     
     # Caminho para salvar o arquivo
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    file_path = os.path.join(UPLOAD_DIR, generate_unique_filename(file.filename))
     
     # Salva o arquivo no servidor
     with open(file_path, "wb") as buffer:
