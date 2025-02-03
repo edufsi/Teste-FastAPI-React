@@ -33,6 +33,6 @@ O front-end estará disponível em http://localhost:5173. Caso você tenha que e
 `origins = ["http://localhost:{porta utilizada}"]`
 
 ### **3. Acessando a Aplicação**
-Abra o navegador e acesse http://localhost:{porta utilizada}
+Abra o navegador e acesse http://localhost:5173 (ou a porta que você utilizou, caso tenha usado outra).
 No front-end, será possível selecionar um arquivo HTML e enviá-lo para o servidor.
 O back-end processará o arquivo e retornará o charset, que será mostrado no front-end.
