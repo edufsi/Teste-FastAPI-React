@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../api";
+import { useNavigate } from "react-router-dom";
 
 
 const UploadForm = () => {
@@ -7,6 +8,7 @@ const UploadForm = () => {
   const [message, setMessage] = useState("");
   const [charset, setCharset] = useState("");
 
+  const navigate = useNavigate();
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     
     const files = event.target.files;
@@ -26,8 +28,12 @@ const UploadForm = () => {
 
     try {
       const response = await api.post("/upload/", formData);
-      setMessage(response.data.message);
-      setCharset(response.data.charset);
+
+
+      navigate(`results/${response.data.filename}`)
+
+      //setMessage(response.data.message);
+      //setCharset(response.data.charset);
 
     } catch (error) {
       setMessage("Erro no upload");

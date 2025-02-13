@@ -4,3 +4,4 @@ uvicorn
 axios
 python-multipart
 beautifulsoup4
+matplotlib

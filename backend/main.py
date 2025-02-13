@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 
 # Middleware do FastAPI para controlar as permissões de CORS (Cross-Origin Resource Sharing). Isso permite configurar DE QUAIS domínios ou portas o servidor pode receber requisições
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +12,14 @@ import shutil
 # Para processar o html
 from bs4 import BeautifulSoup
 
+
+from fastapi.responses import FileResponse
+from matplotlib.figure import Figure
+
+
 import time
 import hashlib
+
 
 def generate_unique_filename(filename):
     timestamp = str(int(time.time()))  # Gera um timestamp único
@@ -40,6 +46,33 @@ app.add_middleware(
     allow_headers=['*'] # Permite todos os cabeçalhos nas requisições (desnecessario aqui)
 )
 
+# Dicionario global para armazenar os resultados do processamento
+RESULTS = {}
+
+
+@app.get(path="/results/{selectionView}/{filename}")
+async def get_results(selectionView: str, filename: str):
+    """Retorna os dados do arquivo e a url da imagem gerada para o frontend"""
+    result = RESULTS.get(filename, None)
+
+    if result:
+        return {"filename": filename, "charset": result["charset"], "image_url":  f"http://localhost:8000/results/{selectionView}/{filename}/image"}
+    else:
+        return {"error": "Arquivo não encontrado"}
+
+
+@app.get("/results/{selectionView}/{filename}/image")
+async def get_image(selectionView: str, filename: str):
+    """Retorna a imagem gerada para o frontend"""
+
+    img_path = os.path.join(UPLOAD_DIR, selectionView, f"{filename}.png")
+
+
+    if not os.path.exists(img_path):
+        raise HTTPException(status_code=404, detail="Imagem não encontrada")
+
+    return FileResponse(img_path, media_type="image/png")
+
 
 # a palavra-chave async nas funções de endpoint permite que a função seja executada de maneira assíncrona, sem bloquear outras requisições.
 # Essa é uma das vantagens da FastAPI, que já suporta programação assíncrona nativamente
@@ -50,9 +83,13 @@ async def upload_html(file: UploadFile = File(...)):
     
     # Garante que o diretório de uploads existe
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    
+    os.makedirs(os.path.join(UPLOAD_DIR, "0"), exist_ok=True)
+    os.makedirs(os.path.join(UPLOAD_DIR, "1"), exist_ok=True)
+
+    unique_file_name = generate_unique_filename(file.filename)
+
     # Caminho para salvar o arquivo
-    file_path = os.path.join(UPLOAD_DIR, generate_unique_filename(file.filename))
+    file_path = os.path.join(UPLOAD_DIR, unique_file_name)
     
     # Salva o arquivo no servidor
     with open(file_path, "wb") as buffer:
@@ -79,7 +116,41 @@ async def upload_html(file: UploadFile = File(...)):
         if not found_charset:
            charset = "Charset não encontrado"
 
-    return {"filename": file.filename, "charset": charset,  "message": "Upload realizado com sucesso"}
+
+    # GERANDO GRÁFICOS DE EXEMPLO
+
+    x = [1, 2, 3, 4, 5]
+    y = [10, 20, 15, 25, 30]
+
+
+    fig = Figure()
+    ax = fig.subplots()
+
+    ax.plot(x, y)
+
+    img_path = os.path.join(UPLOAD_DIR, "0", f"{unique_file_name}.png")
+    print(img_path)
+
+    fig.savefig(img_path)
+
+    print("AASDNFSDNFLSKNDF")
+    fig = Figure()
+    ax = fig.subplots()
+    x = [1, 2, 3, 4, 5]
+    y = [30, 25, 15, 20, 10]
+
+    ax.plot(x, y)
+
+    img_path = os.path.join(UPLOAD_DIR, "1", f"{unique_file_name}.png")
+    fig.savefig(img_path)
+
+
+    RESULTS[unique_file_name] = {"filename": unique_file_name, "charset" : charset}
+
+
+
+
+    return {"filename": unique_file_name, "charset": charset,  "message": "Upload realizado com sucesso"}
 
 
 
